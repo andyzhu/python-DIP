@@ -7,16 +7,11 @@ import matplotlib.pyplot
 BASE_DIR = Path(__file__).resolve(strict=True).parent
 
 class App():
-    def read(self, filename):
-        temperatues_by_hour = {}
-        with open(filename, 'r') as file:
-            reader = csv.reader(file)
-            next(reader) # skip the header
-            for row in reader:
-                hour = datetime.datetime.strptime(row[0], '%d/%m/%Y %H:%M').isoformat()
-                temperatue = float(row[2])
-                temperatues_by_hour[hour] = temperatue
-        return temperatues_by_hour
+    def __init__(self, data_source):
+        self.data_source = data_source
+
+    def read(self, **kwargs):
+        return self.data_source.read(**kwargs)
 
     def draw(self, temperature_by_hour):
         dates = []
@@ -26,11 +21,14 @@ class App():
             temperatures.append(temperatue)
         dates = matplotlib.dates.date2num(dates)
         matplotlib.pyplot.plot_date(dates, temperatures, linestyle='-')
-        matplotlib.pyplot.show()
+        matplotlib.pyplot.show(block=True)
+
 
 if __name__ == '__main__':
     import sys
+    # from urban_climate_csv import DataSource
+    from openweather_json import DataSource
     file_name = sys.argv[1]
-    app = App()
-    temperatures_by_hour = app.read(file_name)
+    app = App(DataSource())
+    temperatures_by_hour = app.read(file_name=file_name)
     app.draw(temperatures_by_hour)
